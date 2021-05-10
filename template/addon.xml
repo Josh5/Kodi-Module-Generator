@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.module.PYTHON_MODULE_NAME"
+       name="PYTHON_MODULE_NAME"
+       version="PYTHON_MODULE_VERSION"
+       provider-name="PYTHON_MODULE_AUTHOR">
+  <requires>
+    <import addon="xbmc.python"
+            version="3.0.0"/>PYTHON_MODULE_DEPENDENCIES
+  </requires>
+  <extension point="xbmc.python.module"
+             library="lib"/>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">PYTHON_MODULE_SUMMARY</summary>
+    <description lang="en_GB">PYTHON_MODULE_DESCRIPTION</description>
+    <license>PYTHON_MODULE_LICENSE</license>
+    <platform>all</platform>
+    <website>PYTHON_MODULE_WEBSITE</website>
+	  <source>PYTHON_MODULE_WEBSITE</source>
+    <assets>
+      <icon>icon.png</icon>
+    </assets>
+  </extension>
+</addon>
