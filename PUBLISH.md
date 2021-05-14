@@ -40,9 +40,9 @@ git checkout script.module.MODULE_NAME
 git checkout matrix
 
 # Create PR branch
-git checkout -b matrix-MODULE_NAME
+git checkout -b matrix-script.module.MODULE_NAME
 
 # Use subtree to place add-on into main repo tree
-git read-tree --prefix=script.module.MODULE_NAME/ -u module.MODULE_NAME
+git read-tree --prefix=script.module.MODULE_NAME/ -u script.module.MODULE_NAME
 
 ```
