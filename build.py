@@ -6,7 +6,7 @@
 # File Created: Monday, 10th May 2021 8:52:42 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Monday, 10th May 2021 11:34:57 pm
+# Last Modified: Friday, 14th May 2021 5:19:22 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 ###
 
@@ -132,12 +132,12 @@ def process_module_deps_list(deps_list):
         build_script_module(module_name, module_version, child_deps)
 
 
-def create_dep_list(module, version):
-    deps_cache = os.path.join(cache_dir, 'deps-{}-{}.json'.format(module, version))
+def create_dep_list(module_name, version):
+    deps_cache = os.path.join(cache_dir, 'deps-{}-{}.json'.format(module_name, version))
 
     if not os.path.exists(deps_cache):
-        print("Fetching Dependencies list for {} v{}".format(module, version))
-        cmd = 'pipgrip --tree --json unmanic'.format(module, version)
+        print("Fetching Dependencies list for {} v{}".format(module_name, version))
+        cmd = 'pipgrip --tree --json {}=={}'.format(module_name, version)
         res = subprocess.check_output(cmd, shell=True)
         decoded = str(res.decode("utf-8"))
         data = json.loads(decoded)
@@ -167,9 +167,9 @@ def run():
         modules = []
 
     for module_data in modules:
-        original_module = module_data.get('module')
+        module_name = module_data.get('name')
         version = module_data.get('version')
-        deps_list = create_dep_list(original_module, version)
+        deps_list = create_dep_list(module_name, version)
         process_module_deps_list(deps_list)
 
 
