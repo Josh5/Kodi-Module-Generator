@@ -6,7 +6,7 @@
 # File Created: Monday, 10th May 2021 8:52:42 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Friday, 14th May 2021 5:19:22 pm
+# Last Modified: Sunday, 16th May 2021 9:59:35 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 ###
 
@@ -59,7 +59,7 @@ def update_module_data(module_dir, module_name, module_deps_list):
         elif x.startswith('License:'):
             module_license = x.split(': ')[1].strip()
         elif x.startswith('Summary:'):
-            module_summary = x.split(': ')[1].strip()
+            module_summary = x.split(': ')[1].strip().replace('&', 'and')
 
     module_xml = os.path.join(module_dir, 'addon.xml')
     # Read in the file
@@ -118,11 +118,34 @@ def build_script_module(module_name, version, module_deps):
     update_module_data(module_dir, module_name, module_deps)
 
 
+def module_is_in_ignore_list(module_name):
+    ignore_list_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ignore_modules.json')
+
+    if not os.path.exists(ignore_list_file):
+        return False
+
+    try:
+        with open(ignore_list_file, 'r') as file:
+            ignored_modules_list = json.load(file)
+    except Exception as e:
+        print("No ignored modules configured... - {}".format(str(e)))
+        ignored_modules_list = []
+
+    if module_name in ignored_modules_list:
+        return True
+    return False
+
+
 def process_module_deps_list(deps_list):
     for dep in deps_list:
         module_name = dep.get('name')
         module_version = dep.get('version')
         child_deps = dep.get('dependencies', [])
+
+        # Don't process module if found in ignore list...
+        if module_is_in_ignore_list(module_name):
+            print("Ignoring module due to found in ignored list... - {}".format(module_name))
+            continue
 
         # Build module for each item found in depends list
         process_module_deps_list(child_deps)
