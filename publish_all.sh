@@ -5,7 +5,7 @@
 # File Created: Friday, 14th May 2021 5:21:20 pm
 # Author: Josh.5 (jsunnex@gmail.com)
 # -----
-# Last Modified: Friday, 14th May 2021 6:17:08 pm
+# Last Modified: Sunday, 16th May 2021 10:04:20 pm
 # Modified By: Josh.5 (jsunnex@gmail.com)
 ###
 
@@ -44,28 +44,54 @@ for out_path in ${project_directory}/out/*; do
         # Print info
         echo -e "\nAdding module '${plugin_name} v${plugin_version}' to kodi plugins repo" 
 
-        # Create new branch
+        # Check if branch already exists...
+        existed_in_remote=$(git fetch origin ${git_branch}-${plugin_name} &> /dev/null && echo 'true')
         existed_in_local=$(git branch --list ${git_branch}-${plugin_name})
 
-        if [[ -z ${existed_in_local} ]]; then
-            echo -e "\nCreating new branch '${git_branch}-${plugin_name}'" 
-            git checkout -b ${git_branch}-${plugin_name}
-        else
-            echo -e "\nCheckout existing branch '${git_branch}-${plugin_name}'" 
+        if [[ ! -z ${existed_in_local} ]]; then
+            echo -e "\nCheckout existing local branch '${git_branch}-${plugin_name}'"
             git checkout ${git_branch}-${plugin_name}
+            git clean -f
+            git reset --hard HEAD~100 &> /dev/null
+            git pull origin ${git_branch}-${plugin_name} &> /dev/null
+            existing_branch='true'
+        elif [[ ! -z ${existed_in_remote} ]]; then
+            echo -e "\nCheckout existing remote branch 'origin/${git_branch}-${plugin_name}'"
+            git checkout -b ${git_branch}-${plugin_name}
+            git pull origin ${git_branch}-${plugin_name} &> /dev/null
+            existing_branch='true'
+        else
+            echo -e "\nCreating new branch '${git_branch}-${plugin_name}'"
+            git checkout -b ${git_branch}-${plugin_name}
+            existing_branch='false'
+        fi
+
+        if [[ -d ${tmp_dir}/kodi-repo-scripts/${plugin_name}/lib ]]; then
+            echo -e "\nClear out old files..." 
+            rm -rf ${tmp_dir}/kodi-repo-scripts/${plugin_name}/lib/*
         fi
 
         echo -e "\nCopy files..." 
-        mkdir -p "${tmp_dir}/kodi-repo-scripts/${plugin_name}"
-        cp -rf "${out_path}"/* ${tmp_dir}/kodi-repo-scripts/${plugin_name}/
+        mkdir -p "${tmp_dir}/kodi-repo-scripts/${plugin_name}/lib"
+        cp -rf "${out_path}"/lib/* ${tmp_dir}/kodi-repo-scripts/${plugin_name}/lib/
+        cp -fv "${out_path}"/addon.xml ${tmp_dir}/kodi-repo-scripts/${plugin_name}/addon.xml
+        if [[ ! -f ${tmp_dir}/kodi-repo-scripts/${plugin_name}/icon.png ]]; then
+            cp -fv "${out_path}"/icon.png ${tmp_dir}/kodi-repo-scripts/${plugin_name}/icon.png
+        fi
+
 
         # Add all files to git
         echo -e "\nAdd new files to git tracking" 
-        git add ./ 
+        git add ./
 
         # Commit
-        echo -e "\nCommit changes" 
-        git commit -a -m "[${plugin_name}] v${plugin_version}"
+        if [[ "${existing_branch}" == "true" ]]; then
+            echo -e "\nAmending previously committed changes" 
+            git commit --amend -a -m "[${plugin_name}] ${plugin_version}" 1> /dev/null
+        else
+            echo -e "\nCommit changes" 
+            git commit -a -m "[${plugin_name}] ${plugin_version}" 1> /dev/null
+        fi
 
         # Push changes...
         echo -e "\nPush changes"
@@ -73,4 +99,4 @@ for out_path in ${project_directory}/out/*; do
 
         popd &> /dev/null
     fi
-done 
+done
